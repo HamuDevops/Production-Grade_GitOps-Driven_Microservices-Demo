@@ -58,7 +58,7 @@ module "eks" {
       instance_types = ["c7i-flex.large"]
 
       min_size     = 2
-      max_size     = 10
+      max_size     = 5
       desired_size = 2
     }
   }
