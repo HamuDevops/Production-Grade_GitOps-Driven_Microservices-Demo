@@ -1,0 +1,18 @@
+{
+  "Comment": "Create ACM certificate validation record",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_62a2a6a664e35b62e0f430a20d3574d6.thebison.online.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "_c0735c42ee46eb2ba08220b6ae38ecca.jkddzztszm.acm-validations.aws."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+=== NS ===
+ns63.domaincontrol.com.
+ns64.domaincontrol.com.
+=== A ===
+13.248.243.5
+76.223.105.230
+=== AAAA ===
+=== WWW ===
+thebison.online.
+=== ARGOCD ===
+k8s-default-appalbga-a6f1e7e894-34792152.us-east-1.elb.amazonaws.com.
+=== MX ===
+=== TXT ROOT ===
+=== DMARC ===
+"v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;"
+=== CAA ===
