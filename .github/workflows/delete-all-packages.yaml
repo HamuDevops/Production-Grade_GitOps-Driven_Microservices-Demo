@@ -1,0 +1,32 @@
+name: Delete all GHCR packages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  delete-packages:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - microservices-demo/recommendationservice
+          - microservices-demo/frontend
+          - microservices-demo/checkoutservice
+          - microservices-demo/shippingservice
+          - microservices-demo/productcatalogservice
+          - microservices-demo/loadgenerator
+          - microservices-demo/currencyservice
+          - microservices-demo/paymentservice
+          - microservices-demo/emailservice
+          - microservices-demo/shoppingassistantservice
+
+    steps:
+      - name: Delete all versions of ${{ matrix.package }}
+        uses: actions/delete-package-versions@v5
+        with:
+          owner: HamuDevops
+          package-name: ${{ matrix.package }}
+          package-type: container
+          min-versions-to-keep: 0
+          token: ${{ secrets.GHCR_DELETE_TOKEN }}
