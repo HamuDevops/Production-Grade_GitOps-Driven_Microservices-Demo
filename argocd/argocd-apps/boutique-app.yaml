@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: https://github.com/HamuDevops/Production-Grade_GitOps-Driven_Microservices-Demo.git
     targetRevision: HEAD
-    path: kubernetes-manifests
+    path: .
 
   destination:
     server: https://kubernetes.default.svc
