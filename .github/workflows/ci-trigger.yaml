@@ -2,20 +2,21 @@ name: Microservices Trigger CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "src/**"
+
+  # Allows manually building every service
+  workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  # -------------------------------
-  # Job 1: Detect changed services
-  # -------------------------------
   detect-changes:
     runs-on: ubuntu-latest
+
     outputs:
       services: ${{ steps.changed.outputs.services }}
 
@@ -25,24 +26,44 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect changed services
+      - name: Detect services
         id: changed
+        shell: bash
         run: |
-          SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
-            | grep '^src/' \
-            | cut -d'/' -f2 \
-            | sort -u \
-            | jq -R -s -c 'split("\n")[:-1]')
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual run: detecting all services with Dockerfiles"
+
+            SERVICES=$(
+              find src \
+                -mindepth 2 \
+                -maxdepth 2 \
+                -type f \
+                -name Dockerfile \
+                -printf '%h\n' |
+              sed 's#^src/##' |
+              sort -u |
+              jq -R -s -c 'split("\n")[:-1]'
+            )
+          else
+            echo "Push run: detecting changed services"
+
+            SERVICES=$(
+              git diff --name-only \
+                "${{ github.event.before }}" \
+                "${{ github.sha }}" |
+              grep '^src/' |
+              cut -d'/' -f2 |
+              sort -u |
+              jq -R -s -c 'split("\n")[:-1]'
+            )
+          fi
 
           echo "Detected services: $SERVICES"
-          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+          echo "services=$SERVICES" >> "$GITHUB_OUTPUT"
 
-
-  # --------------------------------------------------
-  # Job 2: Call reusable workflow (matrix per service)
-  # --------------------------------------------------
   build-and-push:
     needs: detect-changes
+
     if: needs.detect-changes.outputs.services != '[]'
 
     strategy:
@@ -50,8 +71,6 @@ jobs:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
 
-    # 🚨 IMPORTANT:
-    # Reusable workflows are called at JOB level
     uses: ./.github/workflows/microservice-ci.yaml
 
     with:
