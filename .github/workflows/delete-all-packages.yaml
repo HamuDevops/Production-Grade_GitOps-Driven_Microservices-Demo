@@ -26,11 +26,29 @@ jobs:
           - microservices-demo/shoppingassistantservice
 
     steps:
-      - name: Delete all versions of ${{ matrix.package }}
-        uses: actions/delete-package-versions@v5
-        with:
-          owner: HamuDevops
-          package-name: ${{ matrix.package }}
-          package-type: container
-          min-versions-to-keep: 0
-          token: ${{ github.token }}
+      - name: Delete complete package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_NAME: ${{ matrix.package }}
+        run: |
+          encoded=$(python3 -c \
+            'import os, urllib.parse; print(urllib.parse.quote(os.environ["PACKAGE_NAME"], safe=""))')
+
+          response_file=$(mktemp)
+
+          http_code=$(curl --http1.1 --path-as-is -sS \
+            -o "$response_file" \
+            -w '%{http_code}' \
+            -X DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/users/HamuDevops/packages/container/${encoded}")
+
+          if [ "$http_code" = "204" ]; then
+            echo "DELETED: ${PACKAGE_NAME}"
+          else
+            echo "FAILED: ${PACKAGE_NAME} - HTTP ${http_code}"
+            cat "$response_file"
+            exit 1
+          fi
